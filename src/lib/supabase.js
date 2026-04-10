@@ -1,11 +1,15 @@
 import { createClient } from '@supabase/supabase-js'
 
-export const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-)
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+// Gracefully handle missing config — app works without Supabase, just no persistence
+export const supabase = supabaseUrl && supabaseKey
+  ? createClient(supabaseUrl, supabaseKey)
+  : null
 
 export async function saveProject({ diagnosis, imageUrl, completedSteps = 0 }) {
+  if (!supabase) return { id: crypto.randomUUID() }
   const { data, error } = await supabase
     .from('projects')
     .insert({
@@ -31,6 +35,7 @@ export async function saveProject({ diagnosis, imageUrl, completedSteps = 0 }) {
 }
 
 export async function getProjects() {
+  if (!supabase) return []
   const { data, error } = await supabase
     .from('projects')
     .select('*')
@@ -41,6 +46,7 @@ export async function getProjects() {
 }
 
 export async function updateProjectSteps(id, completedSteps) {
+  if (!supabase) return
   const { error } = await supabase
     .from('projects')
     .update({ completed_steps: completedSteps, updated_at: new Date().toISOString() })
@@ -50,6 +56,7 @@ export async function updateProjectSteps(id, completedSteps) {
 }
 
 export async function deleteProject(id) {
+  if (!supabase) return
   const { error } = await supabase
     .from('projects')
     .delete()
