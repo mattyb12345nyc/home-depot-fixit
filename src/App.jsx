@@ -5,7 +5,7 @@ import AnalyzingScreen from './components/AnalyzingScreen'
 import DiagnosisScreen from './components/DiagnosisScreen'
 import RepairGuideScreen from './components/RepairGuideScreen'
 import ProjectsScreen from './components/ProjectsScreen'
-import { getRandomDiagnosis } from './data/mockDiagnoses'
+import { analyzeImage } from './lib/analyzeImage'
 import { saveProject, getProjects, deleteProject, rowToDiagnosis } from './lib/supabase'
 import './index.css'
 
@@ -20,7 +20,9 @@ const SCREENS = {
 export default function App() {
   const [screen, setScreen] = useState(SCREENS.CAMERA)
   const [imageUrl, setImageUrl] = useState(null)
+  const [imageFile, setImageFile] = useState(null)
   const [diagnosis, setDiagnosis] = useState(null)
+  const [analysisError, setAnalysisError] = useState(null)
   const [projects, setProjects] = useState([])
   const [currentProjectId, setCurrentProjectId] = useState(null)
 
@@ -28,22 +30,30 @@ export default function App() {
     getProjects().then(setProjects).catch(console.error)
   }, [])
 
-  function handleCapture(url) {
+  async function handleCapture(url, file) {
     setImageUrl(url)
-    setDiagnosis(getRandomDiagnosis())
+    setImageFile(file)
+    setAnalysisError(null)
     setScreen(SCREENS.ANALYZING)
+
+    try {
+      const result = await analyzeImage(file)
+      setDiagnosis(result)
+      setScreen(SCREENS.DIAGNOSIS)
+    } catch (err) {
+      console.error('Analysis failed:', err)
+      setAnalysisError(err.message)
+      setScreen(SCREENS.CAMERA)
+    }
   }
 
-  const handleAnalysisComplete = useCallback(() => {
-    setScreen(SCREENS.DIAGNOSIS)
-  }, [])
+  // Not used anymore since analysis drives the transition, but keep for AnalyzingScreen prop
+  const handleAnalysisComplete = useCallback(() => {}, [])
 
   async function handleAcceptDiagnosis() {
-    // Save to Supabase when user accepts the diagnosis
     try {
       const saved = await saveProject({ diagnosis, imageUrl })
       setCurrentProjectId(saved.id)
-      // Refresh projects list
       const updated = await getProjects()
       setProjects(updated)
     } catch (err) {
@@ -54,8 +64,10 @@ export default function App() {
 
   function handleRetake() {
     setImageUrl(null)
+    setImageFile(null)
     setDiagnosis(null)
     setCurrentProjectId(null)
+    setAnalysisError(null)
     setScreen(SCREENS.CAMERA)
   }
 
@@ -112,7 +124,7 @@ export default function App() {
       />
 
       {screen === SCREENS.CAMERA && (
-        <CameraScreen onCapture={handleCapture} />
+        <CameraScreen onCapture={handleCapture} error={analysisError} />
       )}
 
       {screen === SCREENS.ANALYZING && (

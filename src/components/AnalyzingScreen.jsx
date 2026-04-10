@@ -14,13 +14,12 @@ export default function AnalyzingScreen({ imageUrl, onComplete }) {
   const [progress, setProgress] = useState(0)
 
   useEffect(() => {
-    const stepDuration = 700
+    const stepDuration = 1200
     const timer = setInterval(() => {
       setCurrentStep((prev) => {
         if (prev >= ANALYSIS_STEPS.length - 1) {
-          clearInterval(timer)
-          setTimeout(() => onComplete(), 600)
-          return prev
+          // Loop back to keep animating while waiting for real analysis
+          return 0
         }
         return prev + 1
       })
@@ -28,19 +27,16 @@ export default function AnalyzingScreen({ imageUrl, onComplete }) {
 
     const progressTimer = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(progressTimer)
-          return 100
-        }
-        return prev + 2.5
+        if (prev >= 95) return 95 // Hold at 95% until real analysis completes
+        return prev + 1
       })
-    }, 80)
+    }, 120)
 
     return () => {
       clearInterval(timer)
       clearInterval(progressTimer)
     }
-  }, [onComplete])
+  }, [])
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-56px)] bg-hd-black">

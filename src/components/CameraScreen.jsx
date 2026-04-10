@@ -1,14 +1,14 @@
 import { useRef } from 'react'
 import { Camera, Wrench, Zap, ShieldCheck } from 'lucide-react'
 
-export default function CameraScreen({ onCapture }) {
+export default function CameraScreen({ onCapture, error }) {
   const fileInput = useRef(null)
 
   function handleFile(e) {
     const file = e.target.files?.[0]
     if (file) {
       const url = URL.createObjectURL(file)
-      onCapture(url)
+      onCapture(url, file)
     }
   }
 
@@ -53,6 +53,14 @@ export default function CameraScreen({ onCapture }) {
             onChange={handleFile}
             className="hidden"
           />
+
+          {error && (
+            <div className="mt-4 bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+              <p className="text-sm text-hd-red font-medium">Analysis failed</p>
+              <p className="text-xs text-hd-gray-text mt-1">{error}</p>
+              <p className="text-xs text-hd-gray-text mt-1">Please try again with a clearer photo.</p>
+            </div>
+          )}
 
         </div>
       </div>
