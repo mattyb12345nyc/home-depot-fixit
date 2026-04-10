@@ -1,17 +1,93 @@
-import { useRef } from 'react'
-import { Camera, Wrench, Zap, ShieldCheck } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { Camera, Wrench, Zap, ShieldCheck, X, ArrowRight } from 'lucide-react'
 
 export default function CameraScreen({ onCapture, error }) {
   const fileInput = useRef(null)
+  const [preview, setPreview] = useState(null)
+  const [file, setFile] = useState(null)
+  const [context, setContext] = useState('')
 
   function handleFile(e) {
-    const file = e.target.files?.[0]
-    if (file) {
-      const url = URL.createObjectURL(file)
-      onCapture(url, file)
+    const f = e.target.files?.[0]
+    if (f) {
+      setFile(f)
+      setPreview(URL.createObjectURL(f))
     }
   }
 
+  function handleClear() {
+    setPreview(null)
+    setFile(null)
+    setContext('')
+    if (fileInput.current) fileInput.current.value = ''
+  }
+
+  function handleSubmit() {
+    if (file && preview) {
+      onCapture(preview, file, context.trim() || null)
+    }
+  }
+
+  // Photo selected — show preview + context input
+  if (preview) {
+    return (
+      <div className="flex flex-col min-h-[calc(100vh-56px)]">
+        {/* Preview image */}
+        <div className="relative">
+          <img src={preview} alt="Preview" className="w-full aspect-[4/3] object-cover" />
+          <button
+            onClick={handleClear}
+            className="absolute top-3 right-3 bg-hd-black/60 text-white rounded-full p-2 active:bg-hd-black/80"
+            aria-label="Remove photo"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Context input */}
+        <div className="px-5 py-5 flex-1">
+          <label className="block text-sm font-semibold text-hd-black mb-2">
+            Describe the issue
+            <span className="text-hd-gray-text font-normal ml-1">(optional)</span>
+          </label>
+          <textarea
+            value={context}
+            onChange={(e) => setContext(e.target.value)}
+            placeholder="e.g. The faucet has been dripping for a week, the handle feels loose when I turn it..."
+            className="w-full border border-hd-gray-mid rounded-xl p-3 text-sm text-hd-dark
+                       placeholder:text-hd-gray-text/60 resize-none focus:outline-none
+                       focus:border-hd-orange focus:ring-1 focus:ring-hd-orange/30"
+            rows={3}
+          />
+          <p className="text-xs text-hd-gray-text mt-2">
+            Adding context helps our AI give you a more accurate diagnosis and better repair steps.
+          </p>
+        </div>
+
+        {/* Submit button */}
+        <div className="px-5 pb-6">
+          <button
+            onClick={handleSubmit}
+            className="w-full bg-hd-orange text-white font-bold py-4 rounded-xl
+                       flex items-center justify-center gap-2 active:bg-hd-orange-dark transition-colors
+                       shadow-lg shadow-hd-orange/25"
+          >
+            Analyze This
+            <ArrowRight size={20} />
+          </button>
+          <button
+            onClick={handleClear}
+            className="w-full text-hd-gray-text font-medium py-3 mt-2
+                       active:text-hd-dark transition-colors text-sm"
+          >
+            Choose a different photo
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // No photo yet — show camera capture
   return (
     <div className="flex flex-col min-h-[calc(100vh-56px)]">
       {/* Hero */}
@@ -27,7 +103,6 @@ export default function CameraScreen({ onCapture, error }) {
       {/* Camera Capture Area */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 -mt-6">
         <div className="w-full max-w-sm animate-fade-in-delay">
-          {/* Main capture button */}
           <button
             onClick={() => fileInput.current?.click()}
             className="w-full bg-white rounded-2xl shadow-lg border-2 border-dashed border-hd-orange/30
@@ -61,7 +136,6 @@ export default function CameraScreen({ onCapture, error }) {
               <p className="text-xs text-hd-gray-text mt-1">Please try again with a clearer photo.</p>
             </div>
           )}
-
         </div>
       </div>
 

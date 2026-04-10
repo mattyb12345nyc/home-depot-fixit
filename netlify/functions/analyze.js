@@ -3,14 +3,18 @@ export default async (req) => {
     return new Response(JSON.stringify({ error: 'POST required' }), { status: 405 })
   }
 
-  const { image } = await req.json()
+  const { image, context } = await req.json()
   if (!image) {
     return new Response(JSON.stringify({ error: 'image (base64) required' }), { status: 400 })
   }
 
   const mediaType = image.startsWith('/9j/') ? 'image/jpeg' : 'image/png'
 
-  const prompt = `You are a Home Depot home repair expert AI. Analyze this image and identify what needs to be fixed or repaired.
+  const contextLine = context
+    ? `\n\nThe user provided this additional context about the issue: "${context}"\nUse this context to inform your diagnosis — it may help identify the problem more accurately.`
+    : ''
+
+  const prompt = `You are a Home Depot home repair expert AI. Analyze this image and identify what needs to be fixed or repaired.${contextLine}
 
 Return a JSON object with this exact structure (no markdown, no code fences, just raw JSON):
 {
@@ -43,7 +47,7 @@ Return a JSON object with this exact structure (no markdown, no code fences, jus
 Rules:
 - Be VERY specific about what you see in the image. Describe the actual damage, material, location.
 - Steps should be detailed enough for a homeowner to follow without prior experience.
-- searchQueries should be 2-4 specific product searches that would return relevant results on homedepot.com.
+- searchQueries should be 2-4 specific product searches that would return relevant results on homedepot.com (e.g. "faucet cartridge repair kit", "deck screws stainless steel").
 - totalEstimate should be a reasonable estimate for materials only (not tools).
 - If you cannot identify a clear repair issue, describe what you see and suggest a maintenance task.
 - Return ONLY valid JSON, no other text.`
@@ -98,7 +102,6 @@ Rules:
       headers: { 'Content-Type': 'application/json' },
     })
   } catch {
-    // Try to extract JSON from the response if it has extra text
     const match = text.match(/\{[\s\S]*\}/)
     if (match) {
       return new Response(match[0], {

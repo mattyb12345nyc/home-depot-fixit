@@ -296,10 +296,10 @@ export default function RepairGuideScreen({ diagnosis, projectId, onStartOver })
             )}
 
             {/* Shop CTA */}
-            {!loadingProducts && (
+            {!loadingProducts && products.length > 0 && (
               <>
                 <a
-                  href="https://www.homedepot.com/mycart/home"
+                  href={`https://www.homedepot.com/s/${encodeURIComponent(diagnosis.title + ' repair')}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full bg-hd-orange text-white font-bold
@@ -307,12 +307,12 @@ export default function RepairGuideScreen({ diagnosis, projectId, onStartOver })
                              shadow-lg shadow-hd-orange/25"
                 >
                   <ShoppingCart size={20} />
-                  Shop All Products on HomeDepot.com
+                  Shop All on HomeDepot.com
                   <ArrowRight size={18} />
                 </a>
 
                 <p className="text-center text-xs text-hd-gray-text mt-3">
-                  Prices from homedepot.com. Tap any product to view details.
+                  Tap each product above to add individually to your cart on homedepot.com
                 </p>
               </>
             )}

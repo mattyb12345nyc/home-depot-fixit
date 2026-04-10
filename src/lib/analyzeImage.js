@@ -1,10 +1,10 @@
-export async function analyzeImage(imageFile) {
+export async function analyzeImage(imageFile, context) {
   const base64 = await fileToBase64(imageFile)
 
   const res = await fetch('/.netlify/functions/analyze', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ image: base64 }),
+    body: JSON.stringify({ image: base64, context: context || null }),
   })
 
   if (!res.ok) {

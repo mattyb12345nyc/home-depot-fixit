@@ -30,14 +30,14 @@ export default function App() {
     getProjects().then(setProjects).catch(console.error)
   }, [])
 
-  async function handleCapture(url, file) {
+  async function handleCapture(url, file, context) {
     setImageUrl(url)
     setImageFile(file)
     setAnalysisError(null)
     setScreen(SCREENS.ANALYZING)
 
     try {
-      const result = await analyzeImage(file)
+      const result = await analyzeImage(file, context)
       setDiagnosis(result)
       setScreen(SCREENS.DIAGNOSIS)
     } catch (err) {
