@@ -65,7 +65,7 @@ export default function DiagnosisScreen({ diagnosis, imageUrl, onAccept, onRetak
           </div>
           <div className="bg-white rounded-xl border border-hd-gray-mid p-3 text-center">
             <span className="text-hd-orange text-lg font-bold block mb-0.5">$</span>
-            <p className="text-xs text-hd-gray-text">Est. Cost</p>
+            <p className="text-xs text-hd-gray-text">Est. Materials</p>
             <p className="text-sm font-bold text-hd-black">{diagnosis.totalEstimate}</p>
           </div>
         </div>

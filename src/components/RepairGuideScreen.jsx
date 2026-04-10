@@ -261,8 +261,13 @@ export default function RepairGuideScreen({ diagnosis, projectId, onStartOver })
             {/* Total */}
             <div className="bg-hd-orange/5 border border-hd-orange/20 rounded-xl p-4 mb-4 flex items-center justify-between">
               <div>
-                <p className="text-xs text-hd-gray-text uppercase tracking-wider font-medium">Estimated Total</p>
+                <p className="text-xs text-hd-gray-text uppercase tracking-wider font-medium">
+                  {liveProducts.length > 0 ? 'Total (Live Prices)' : 'Estimated Total'}
+                </p>
                 <p className="text-2xl font-bold text-hd-orange">{totalEstimate}</p>
+                {liveProducts.length > 0 && (
+                  <p className="text-xs text-hd-gray-text mt-0.5">{products.length} items from homedepot.com</p>
+                )}
               </div>
               <Package size={28} className="text-hd-orange/40" />
             </div>
